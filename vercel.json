@@ -1,0 +1,9 @@
+{
+  "buildCommand": null,
+  "installCommand": null,
+  "devCommand": null,
+  "framework": null,
+  "public": true,
+  "cleanUrls": true,
+  "trailingSlash": false
+}
