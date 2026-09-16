@@ -70,7 +70,9 @@ html,body{min-height:100%;font-family:'Inter',sans-serif;background:#f4f6f9;colo
 .ban-nm{font-size:17px;font-weight:700;color:#fff;margin-bottom:1px}
 .ban-sub{font-size:11px;color:rgba(255,255,255,.38)}
 .ban-stats{display:flex;margin-top:12px;background:rgba(0,0,0,.14);border-radius:7px;overflow:hidden}
-.bs{flex:1;padding:8px 4px;text-align:center;border-right:1px solid rgba(255,255,255,.06);transition:background .25s}
+.bs{flex:1;padding:8px 4px;text-align:center;border-right:1px solid rgba(255,255,255,.06);transition:background .25s;cursor:pointer}
+.bs:hover,.bs:focus-visible{background:rgba(255,255,255,.12);outline:none}
+.bs:active{background:rgba(255,255,255,.18)}
 .bs:last-child{border-right:none}
 .bs-v{font-size:18px;font-weight:700;color:#fff;line-height:1}
 .bs-l{font-size:8px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.32);margin-top:1px}
@@ -257,7 +259,7 @@ html,body{min-height:100%;font-family:'Inter',sans-serif;background:#f4f6f9;colo
     </div>
   </header>
   <div class="tabs">
-    <div class="tab on" onclick="showTab('obras',this)">Mis obras</div>
+    <div class="tab on" id="tab-obras-btn" onclick="showTab('obras',this)">Mis obras</div>
     <div class="tab" onclick="showTab('entregas',this)" id="tab-ent">Entregas 2026</div>
   </div>
   <div class="banner">
@@ -265,10 +267,10 @@ html,body{min-height:100%;font-family:'Inter',sans-serif;background:#f4f6f9;colo
     <div class="ban-nm" id="ban-nm">–</div>
     <div class="ban-sub">Estado de sus obras a tiempo real</div>
     <div class="ban-stats">
-      <div class="bs"><div class="bs-v" id="bs-total">–</div><div class="bs-l">Obras</div></div>
-      <div class="bs"><div class="bs-v" id="bs-curso">–</div><div class="bs-l">En curso</div></div>
-      <div class="bs" id="bs-alm-box"><div class="bs-v" id="bs-alm">–</div><div class="bs-l">Almacén</div></div>
-      <div class="bs"><div class="bs-v" id="bs-ent">–</div><div class="bs-l">Entregadas</div></div>
+      <div class="bs" tabindex="0" role="button" aria-label="Ver todas las obras" onclick="irABanner('todas')" onkeydown="if(event.key==='Enter')irABanner('todas')"><div class="bs-v" id="bs-total">–</div><div class="bs-l">Obras</div></div>
+      <div class="bs" tabindex="0" role="button" aria-label="Ver obras en curso" onclick="irABanner('activas')" onkeydown="if(event.key==='Enter')irABanner('activas')"><div class="bs-v" id="bs-curso">–</div><div class="bs-l">En curso</div></div>
+      <div class="bs" id="bs-alm-box" tabindex="0" role="button" aria-label="Ver obras en almacén" onclick="irABanner('almacen')" onkeydown="if(event.key==='Enter')irABanner('almacen')"><div class="bs-v" id="bs-alm">–</div><div class="bs-l">Almacén</div></div>
+      <div class="bs" tabindex="0" role="button" aria-label="Ver obras entregadas" onclick="irABanner('entregadas')" onkeydown="if(event.key==='Enter')irABanner('entregadas')"><div class="bs-v" id="bs-ent">–</div><div class="bs-l">Entregadas</div></div>
     </div>
   </div>
   <!-- TAB OBRAS -->
@@ -278,11 +280,12 @@ html,body{min-height:100%;font-family:'Inter',sans-serif;background:#f4f6f9;colo
       <input type="text" placeholder="Buscar por código de obra…" oninput="renderObras()">
     </div>
     <div class="filters">
-      <div class="ftab" onclick="setF('todas',this)">Todas</div>
-      <div class="ftab" onclick="setF('camaras',this)">Cámaras</div>
-      <div class="ftab" onclick="setF('mobiliario',this)">Mobiliario</div>
-      <div class="ftab on" onclick="setF('activas',this)">En curso</div>
-      <div class="ftab" onclick="setF('almacen',this)">En almacén</div>
+      <div class="ftab" data-filtro="todas" onclick="setF('todas',this)">Todas</div>
+      <div class="ftab" data-filtro="camaras" onclick="setF('camaras',this)">Cámaras</div>
+      <div class="ftab" data-filtro="mobiliario" onclick="setF('mobiliario',this)">Mobiliario</div>
+      <div class="ftab on" data-filtro="activas" onclick="setF('activas',this)">En curso</div>
+      <div class="ftab" data-filtro="almacen" onclick="setF('almacen',this)">En almacén</div>
+      <div class="ftab" data-filtro="pendientes" onclick="setF('pendientes',this)">Pendientes de iniciar</div>
     </div>
     <div id="obras-list"></div>
   </div>
@@ -413,6 +416,16 @@ function entrarPortal(res){
   renderEntregas();
 }
 
+function irABanner(filtro){
+  if(filtro==='entregadas'){
+    showTab('entregas', document.getElementById('tab-ent'));
+    return;
+  }
+  showTab('obras', document.getElementById('tab-obras-btn'));
+  var btn = document.querySelector('.ftab[data-filtro="'+filtro+'"]');
+  if(btn) setF(filtro, btn);
+}
+
 function renderObras(){
   var q=(document.querySelector('#tab-obras .search input').value||'').toLowerCase();
   var list=obrasData.filter(function(o){
@@ -420,6 +433,7 @@ function renderObras(){
     if(filtroActivo==='mobiliario'&&o.canal!=='mobiliario') return false;
     if(filtroActivo==='activas'&&(o.faseActual<=1||o.faseActual>=o.totalFases)) return false;
     if(filtroActivo==='almacen'&&o.faseActual<o.totalFases) return false;
+    if(filtroActivo==='pendientes'&&!(o.faseActual<=1)) return false;
     if(q&&!(o.id||'').toLowerCase().includes(q)&&!(o.referencia||'').toLowerCase().includes(q)) return false;
     return true;
   });
