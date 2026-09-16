@@ -52,7 +52,7 @@ html,body{min-height:100%;font-family:'Inter',sans-serif;background:#f4f6f9;colo
 
 /* ── PORTAL ─────────────────────────────── */
 .portal-hdr{background:var(--azul);padding:12px 14px;flex-shrink:0;position:sticky;top:0;z-index:100}
-.ph-top-row{display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px}
+.ph-top-row{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-bottom:8px}
 .ph-logos-row{display:flex;align-items:stretch;gap:10px}
 .ph-cell{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px 10px;display:flex;align-items:center;justify-content:center;min-height:48px}
 .ph-cell img.logo-ac{height:36px;width:auto;border-radius:5px}
@@ -251,6 +251,7 @@ html,body{min-height:100%;font-family:'Inter',sans-serif;background:#f4f6f9;colo
 <div id="s-portal" style="display:none;flex-direction:column;min-height:100dvh">
   <header class="portal-hdr">
     <div class="ph-top-row">
+      <button class="btn-salir" onclick="actualizarDatos()" id="btn-refrescar">↻ Actualizar</button>
       <button class="btn-salir" onclick="logout()">Salir</button>
     </div>
     <div class="ph-logos-row">
@@ -330,7 +331,7 @@ const FASES_M=['Recepción de materiales','Corte y doblado','Soldadura y ensambl
 // ============================================================
 // ESTADO GLOBAL
 // ============================================================
-var buf='',t1,t2,sesion=null,obrasData=[],entregadasData=[],filtroActivo='activas';
+var buf='',t1,t2,sesion=null,obrasData=[],entregadasData=[],filtroActivo='activas',pinActual='';
 
 // ============================================================
 // LOGOS (Base64)
@@ -381,6 +382,7 @@ function chkPin(){
   .then(function(res){
     if(res.ok){
       rd('ok'); m.className='pin-msg ok'; m.textContent='✓ Acceso correcto';
+      pinActual = pin;
       clearTimeout(t1);
       t1=setTimeout(function(){ entrarPortal(res); },800);
     } else {
@@ -391,6 +393,45 @@ function chkPin(){
   .catch(function(e){
     rd('er'); document.getElementById('pin-msg').textContent='Error de conexión';
     setTimeout(function(){rd('n');},1500);
+  });
+}
+
+function actualizarDatos(){
+  var btn=document.getElementById('btn-refrescar');
+  if(!pinActual || !btn) return;
+  var textoOriginal=btn.textContent;
+  btn.textContent='Actualizando…';
+  btn.disabled=true;
+
+  fetch(SUPABASE_URL + '/functions/v1/rapid-handler', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'apikey': SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ pin: pinActual })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    btn.textContent=textoOriginal;
+    btn.disabled=false;
+    if(!res.ok) return;
+    obrasData = res.obras || [];
+    entregadasData = res.entregadas || [];
+    var alm=obrasData.filter(function(o){return o.faseActual>=o.totalFases}).length;
+    var curso=obrasData.filter(function(o){return o.faseActual>1&&o.faseActual<o.totalFases}).length;
+    document.getElementById('bs-total').textContent=obrasData.length;
+    document.getElementById('bs-curso').textContent=curso;
+    document.getElementById('bs-alm').textContent=alm;
+    document.getElementById('bs-alm-box').classList.toggle('alarma-banner', alm>0);
+    document.getElementById('bs-ent').textContent=entregadasData.length;
+    renderObras();
+    renderEntregas();
+  })
+  .catch(function(e){
+    btn.textContent=textoOriginal;
+    btn.disabled=false;
   });
 }
 
@@ -554,7 +595,7 @@ function showTab(t,el){
 }
 
 function logout(){
-  sesion=null; obrasData=[];
+  sesion=null; obrasData=[]; pinActual='';
   document.getElementById('s-portal').style.display='none';
   document.getElementById('s-login').style.display='block';
 }
