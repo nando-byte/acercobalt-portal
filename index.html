@@ -534,7 +534,7 @@ function renderEntregas(){
   el.innerHTML=lista.map(function(o){
     return '<div class="entrega-row">'
       +'<div><div class="ent-id">'+o.id+'</div><div class="ent-nm">'+o.referencia+'</div><div class="ent-tipo">'+(o.canal==='camaras'?'Cámara frigorífica':'Mobiliario')+'</div></div>'
-      +'<div style="text-align:right"><div class="ent-fecha-l">Entregada</div><div class="ent-fecha">'+fmtF(o.fechaAcabado)+'</div><div class="ent-badge">✓ Entregada</div></div>'
+      +'<div style="text-align:right"><div class="ent-fecha-l">Entregada</div><div class="ent-fecha">'+(o.fechaEntrega?fmtF(o.fechaEntrega):'Sin fecha')+'</div><div class="ent-badge">✓ Entregada</div></div>'
       +'</div>';
   }).join('');
 }
