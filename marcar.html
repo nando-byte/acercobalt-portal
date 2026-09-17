@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Marcar fase · Acercobalt</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;font-family:'Inter',sans-serif;background:#0A0A0A;color:#1a2332}
+:root{--azul:#003D7A;--amarillo:#F5C800;--verde:#15803d;--verde-l:#dcfce7;--borde:#dde3ec;--gris:#64748b;--blanco:#fff}
+
+body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:0}
+
+.hdr{width:100%;background:#0A0A0A;padding:22px 20px 18px;text-align:center;flex-shrink:0}
+.hdr-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--amarillo);margin-bottom:4px}
+.hdr-title{font-size:19px;font-weight:800;color:#fff}
+
+.card{width:100%;max-width:480px;background:var(--blanco);border-radius:20px 20px 0 0;flex:1;padding:22px 20px 40px;margin-top:-1px}
+
+.f-group{margin-bottom:18px}
+.f-lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gris);margin-bottom:7px}
+.f-select{width:100%;padding:14px 14px;border:1.5px solid var(--borde);border-radius:12px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#111;background:var(--blanco);outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.f-select:disabled{background-color:#f4f6f9;color:#aab4c4}
+.f-select:focus{border-color:var(--amarillo)}
+
+.canal-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin-top:8px}
+.canal-pill.camaras{background:#dbeafe;color:#1e40af}
+.canal-pill.mobiliario{background:#f5f3ff;color:#6d28d9}
+
+.fase-actual-box{background:#f9fafb;border:1px solid var(--borde);border-radius:12px;padding:12px 14px;margin-bottom:18px;display:none}
+.fase-actual-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;margin-bottom:2px}
+.fase-actual-val{font-size:13px;font-weight:600;color:#111}
+
+.btn-aceptar{width:100%;padding:17px;border-radius:14px;background:var(--amarillo);color:#0A0A0A;font-family:'Inter',sans-serif;font-size:16px;font-weight:800;border:none;cursor:pointer;transition:transform .1s, opacity .15s}
+.btn-aceptar:active{transform:scale(.98)}
+.btn-aceptar:disabled{opacity:.4;cursor:not-allowed}
+
+.msg{margin-top:16px;text-align:center;font-size:13px;font-weight:600;min-height:18px}
+.msg.ok{color:var(--verde)}
+.msg.err{color:#dc2626}
+
+.empty{text-align:center;padding:40px 16px;color:#9ca3af;font-size:13px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid #e5e7eb;border-top-color:var(--amarillo);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.check-anim{width:64px;height:64px;border-radius:50%;background:var(--verde-l);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.check-anim svg{width:32px;height:32px;stroke:var(--verde);fill:none;stroke-width:3}
+.done-title{text-align:center;font-size:17px;font-weight:800;color:#111;margin-bottom:4px}
+.done-sub{text-align:center;font-size:13px;color:var(--gris);margin-bottom:22px}
+.btn-otra{width:100%;padding:14px;border-radius:12px;background:#f4f6f9;color:#111;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;border:1px solid var(--borde);cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-tag">Acercobalt · Taller</div>
+  <div class="hdr-title">Marcar fase de fabricación</div>
+</div>
+
+<div class="card" id="card">
+  <div class="empty" id="cargando"><span class="spin"></span>Cargando obras…</div>
+
+  <div id="formulario" style="display:none">
+    <div class="f-group">
+      <label class="f-lbl">Obra</label>
+      <select class="f-select" id="sel-obra" onchange="onCambiarObra()">
+        <option value="">Selecciona una obra…</option>
+      </select>
+      <div id="canal-pill-wrap"></div>
+    </div>
+
+    <div class="fase-actual-box" id="fase-actual-box">
+      <div class="fase-actual-lbl">Fase actual</div>
+      <div class="fase-actual-val" id="fase-actual-val">–</div>
+    </div>
+
+    <div class="f-group">
+      <label class="f-lbl">Nueva fase completada</label>
+      <select class="f-select" id="sel-fase" disabled>
+        <option value="">Elige primero una obra…</option>
+      </select>
+    </div>
+
+    <button class="btn-aceptar" id="btn-aceptar" onclick="aceptar()" disabled>Aceptar</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div id="confirmacion" style="display:none">
+    <div class="check-anim"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="done-title">Fase actualizada</div>
+    <div class="done-sub" id="done-sub"></div>
+    <button class="btn-otra" onclick="marcarOtra()">Marcar otra obra</button>
+  </div>
+</div>
+
+<script>
+var SUPABASE_URL = 'https://kzjhymovdatnontzvkum.supabase.co';
+var FASES_C = ['Recepción de materiales','Montaje de camillas y zócalos','Paneles y aislamiento','Ensamblaje','Control de calidad','Embalaje y preparación expedición','En almacén para retirar'];
+var FASES_M = ['Recepción de materiales','Corte y doblado','Soldadura y ensamblaje','Acabados','Control de calidad','Embalaje y preparación expedición','En almacén para retirar'];
+
+var obras = [];
+
+document.addEventListener('DOMContentLoaded', cargarObras);
+
+function cargarObras(){
+  fetch(SUPABASE_URL + '/functions/v1/listar-obras-activas')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(!res.ok){ mostrarErrorCarga('No se pudieron cargar las obras.'); return; }
+      obras = res.obras || [];
+      obras.sort(function(a,b){ return (a.referencia||a.id).localeCompare(b.referencia||b.id); });
+      rellenarSelectObras();
+      document.getElementById('cargando').style.display = 'none';
+      document.getElementById('formulario').style.display = 'block';
+    })
+    .catch(function(){ mostrarErrorCarga('Error de conexión. Comprueba la red.'); });
+}
+
+function mostrarErrorCarga(texto){
+  document.getElementById('cargando').innerHTML = texto + '<br><br><button class="btn-otra" onclick="location.reload()">Reintentar</button>';
+}
+
+function rellenarSelectObras(){
+  var sel = document.getElementById('sel-obra');
+  sel.innerHTML = '<option value="">Selecciona una obra…</option>' + obras.map(function(o){
+    return '<option value="'+o.id+'">'+(o.referencia||'(sin nombre)')+' · '+o.id+'</option>';
+  }).join('');
+}
+
+function onCambiarObra(){
+  var id = document.getElementById('sel-obra').value;
+  var pillWrap = document.getElementById('canal-pill-wrap');
+  var faseBox = document.getElementById('fase-actual-box');
+  var selFase = document.getElementById('sel-fase');
+  var btn = document.getElementById('btn-aceptar');
+
+  if(!id){
+    pillWrap.innerHTML=''; faseBox.style.display='none';
+    selFase.disabled=true; selFase.innerHTML='<option value="">Elige primero una obra…</option>';
+    btn.disabled=true;
+    return;
+  }
+
+  var o = obras.find(function(x){ return x.id===id; });
+  if(!o) return;
+
+  var fases = o.canal==='camaras' ? FASES_C : FASES_M;
+  pillWrap.innerHTML = '<span class="canal-pill '+o.canal+'">'+(o.canal==='camaras'?'Cámara frigorífica':'Mobiliario')+'</span>';
+
+  faseBox.style.display='block';
+  document.getElementById('fase-actual-val').textContent = o.faseActual + '/7 · ' + (fases[o.faseActual-1] || fases[fases.length-1]);
+
+  selFase.disabled=false;
+  selFase.innerHTML = fases.map(function(f,i){
+    var idx=i+1;
+    var etiqueta = idx + '. ' + f + (idx===o.faseActual ? ' (actual)' : '');
+    return '<option value="'+idx+'"'+(idx===o.faseActual?' selected':'')+'>'+etiqueta+'</option>';
+  }).join('');
+
+  btn.disabled=false;
+  document.getElementById('msg').textContent='';
+}
+
+function aceptar(){
+  var id = document.getElementById('sel-obra').value;
+  var faseSeleccionada = parseInt(document.getElementById('sel-fase').value);
+  var o = obras.find(function(x){ return x.id===id; });
+  if(!id || !faseSeleccionada || !o) return;
+
+  var btn = document.getElementById('btn-aceptar');
+  var msg = document.getElementById('msg');
+  btn.disabled = true;
+  msg.className='msg'; msg.textContent='Guardando…';
+
+  var fasesComp = [];
+  for(var i=1;i<faseSeleccionada;i++) fasesComp.push(String(i));
+
+  fetch(SUPABASE_URL + '/functions/v1/swift-responder', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      accion: 'guardarEstado',
+      obraId: id,
+      faseActual: faseSeleccionada,
+      fasesCompletadas: fasesComp.join(','),
+      notas: o.notas || '',
+      usuario: 'QR-Taller'
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if(res.ok){
+      var fases = o.canal==='camaras' ? FASES_C : FASES_M;
+      document.getElementById('done-sub').textContent = (o.referencia||o.id)+' → '+fases[faseSeleccionada-1];
+      document.getElementById('formulario').style.display='none';
+      document.getElementById('confirmacion').style.display='block';
+    } else {
+      btn.disabled=false;
+      msg.className='msg err'; msg.textContent='Error al guardar. Inténtalo de nuevo.';
+    }
+  })
+  .catch(function(){
+    btn.disabled=false;
+    msg.className='msg err'; msg.textContent='Error de conexión. Inténtalo de nuevo.';
+  });
+}
+
+function marcarOtra(){
+  document.getElementById('confirmacion').style.display='none';
+  document.getElementById('cargando').style.display='block';
+  document.getElementById('cargando').innerHTML='<span class="spin"></span>Cargando obras…';
+  document.getElementById('formulario').style.display='none';
+  document.getElementById('sel-obra').value='';
+  document.getElementById('msg').textContent='';
+  cargarObras();
+}
+</script>
+</body>
+</html>
