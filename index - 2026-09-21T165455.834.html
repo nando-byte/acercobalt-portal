@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Portal de Seguimiento · Acercobalt</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;font-family:'Inter',sans-serif;background:#f4f6f9;color:#1a2332;font-size:14px}
+:root{--azul:#003D7A;--azul-m:#0056A8;--azul-l:#E8EFF7;--azul-b:#C5D5E8;--verde:#15803d;--verde-l:#dcfce7;--borde:#dde3ec;--gris:#64748b;--blanco:#fff;--negro:#0A0A0A;--amarillo:#F5C800}
+
+/* SCREENS */
+.screen{display:none}.screen.on{display:flex;flex-direction:column;min-height:100dvh}
+
+/* ── LOGIN ──────────────────────────────── */
+.login-bg{position:fixed;inset:0;background:var(--negro);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.login-bg-logo{position:absolute;width:min(90vw,90vh);height:min(90vw,90vh);opacity:.28;display:flex;align-items:center;justify-content:center}
+.login-bg-logo svg{width:100%;height:100%;fill:var(--amarillo)}
+.login-bg-velo{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,10,10,.75) 0%,transparent 22%,transparent 68%,rgba(10,10,10,.75) 100%)}
+.login-top-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--amarillo) 35%,var(--amarillo) 65%,transparent);opacity:.8}
+.login-screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+
+/* Login header */
+.login-hdr{width:100%;padding:15px 18px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.login-logos{display:flex;align-items:center;gap:9px}
+.ac-mark-sm{width:30px;height:30px;background:var(--amarillo);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ac-mark-sm img{width:15px;height:15px;object-fit:contain}
+.ac-nm-sm{font-size:13px;font-weight:700;color:#fff}
+.logo-sep{width:1px;height:18px;background:rgba(255,255,255,.2);margin:0 4px}
+.client-nm-hdr{font-size:12px;font-weight:700;color:rgba(255,255,255,.5)}
+.login-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(245,200,0,.7);background:rgba(0,0,0,.5);border:1px solid rgba(245,200,0,.2);padding:4px 10px;border-radius:14px}
+
+/* PIN */
+.login-main{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 24px 24px}
+.pin-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.5);margin-bottom:16px;text-align:center}
+.dots{display:flex;gap:15px;margin-bottom:22px}
+.dot{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);background:transparent;transition:all .18s}
+.dot.f{background:var(--amarillo);border-color:var(--amarillo);box-shadow:0 0 12px rgba(245,200,0,.6)}
+.dot.ok{background:#22c55e;border-color:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.5)}
+.dot.er{background:#ef4444;border-color:#ef4444}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;width:100%;max-width:295px}
+.pk{height:62px;border-radius:13px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:all .1s;user-select:none;-webkit-user-select:none}
+.pk:active{transform:scale(.88);background:rgba(245,200,0,.18);border-color:rgba(245,200,0,.45)}
+.pk-n{font-size:21px;font-weight:700;color:rgba(255,255,255,.9);line-height:1}
+.pk-s{font-size:7px;font-weight:500;color:rgba(255,255,255,.18);letter-spacing:.9px;text-transform:uppercase}
+.pk.sp .pk-n{font-size:11px;font-weight:600;color:rgba(255,255,255,.25);letter-spacing:.3px}
+.pin-msg{font-size:11px;font-weight:600;color:#f87171;text-align:center;min-height:16px;margin-top:12px}
+.pin-msg.ok{color:#4ade80}
+.login-foot{width:100%;padding:8px 18px 12px;flex-shrink:0}
+.login-foot-txt{font-size:10px;color:rgba(255,255,255,.12);text-align:center}
+
+/* ── PORTAL ─────────────────────────────── */
+.portal-hdr{background:var(--azul);padding:12px 14px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.ph-top-row{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-bottom:8px}
+.ph-logos-row{display:flex;align-items:stretch;gap:10px}
+.ph-cell{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px 10px;display:flex;align-items:center;justify-content:center;min-height:48px}
+.ph-cell img.logo-ac{height:36px;width:auto;border-radius:5px}
+.ph-cell img.logo-mat{height:18px;width:auto;filter:brightness(0) invert(1)}
+.btn-salir{font-size:10px;font-weight:500;color:rgba(255,255,255,.45);background:transparent;border:1px solid rgba(255,255,255,.18);padding:4px 9px;border-radius:4px;cursor:pointer}
+
+/* TABS */
+.tabs{background:var(--azul);border-top:1px solid rgba(255,255,255,.07);display:flex;flex-shrink:0}
+.tab{flex:1;padding:9px 4px;text-align:center;font-size:11px;font-weight:500;color:rgba(255,255,255,.42);cursor:pointer;border-bottom:2px solid transparent;transition:all .14s}
+.tab.on{color:#fff;border-bottom-color:var(--amarillo)}
+
+/* BANNER */
+.banner{background:var(--azul-m);padding:14px 16px 16px;flex-shrink:0}
+.ban-tag{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.9px;color:rgba(255,255,255,.42);margin-bottom:3px}
+.ban-nm{font-size:17px;font-weight:700;color:#fff;margin-bottom:1px}
+.ban-sub{font-size:11px;color:rgba(255,255,255,.38)}
+.ban-stats{display:flex;margin-top:12px;background:rgba(0,0,0,.14);border-radius:7px;overflow:hidden}
+.bs{flex:1;padding:8px 4px;text-align:center;border-right:1px solid rgba(255,255,255,.06);transition:background .25s;cursor:pointer}
+.bs:hover,.bs:focus-visible{background:rgba(255,255,255,.12);outline:none}
+.bs:active{background:rgba(255,255,255,.18)}
+.bs:last-child{border-right:none}
+.bs-v{font-size:18px;font-weight:700;color:#fff;line-height:1}
+.bs-l{font-size:8px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.32);margin-top:1px}
+
+.bs.alarma-banner{animation:pulse-banner-verde 1.8s ease-in-out infinite}
+@keyframes pulse-banner-verde{0%,100%{background:transparent}50%{background:rgba(34,197,94,.4)}}
+
+/* BODY */
+.portal-body{flex:1;padding:14px}
+
+/* SEARCH */
+.search{display:flex;align-items:center;gap:7px;background:var(--blanco);border:1px solid var(--borde);border-radius:7px;padding:8px 11px;margin-bottom:10px}
+.search svg{width:13px;height:13px;stroke:#9ca3af;fill:none;stroke-width:2;flex-shrink:0}
+.search input{flex:1;border:none;background:transparent;font-family:'Inter',sans-serif;font-size:12px;color:#111;outline:none}
+.search input::placeholder{color:#aab4c4}
+
+/* FILTROS */
+.filters{display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+.filters::-webkit-scrollbar{display:none}
+.ftab{padding:5px 12px;border-radius:20px;border:1px solid var(--borde);background:var(--blanco);font-size:11px;font-weight:500;color:var(--gris);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.ftab.on{background:var(--azul);color:#fff;border-color:var(--azul)}
+
+/* GRID DE TARJETAS */
+.obras-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+
+/* TARJETA COMPACTA CON ANILLO */
+.obra-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:10px;padding:10px 6px;cursor:pointer;transition:border-color .25s, box-shadow .25s;text-align:center}
+.obra-card:active{transform:scale(.96)}
+.card-id{font-size:7px;font-weight:600;color:#aab4c4;letter-spacing:.2px;margin-bottom:1px}
+.card-nm{font-size:10px;font-weight:700;color:#111;margin-bottom:6px;min-height:24px;display:flex;align-items:center;justify-content:center;line-height:1.15}
+.card-ring{position:relative;width:50px;height:50px;margin:0 auto 6px}
+.card-ring svg{transform:rotate(-90deg)}
+.ring-bg{stroke:#e8edf3}
+.ring-fg{stroke:var(--azul);transition:stroke-dashoffset .6s ease}
+.ring-fg.done{stroke:var(--verde)}
+.ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--azul)}
+.ring-pct.done{color:var(--verde)}
+.card-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:12px;font-size:7.5px;font-weight:700;margin-bottom:3px}
+.dot{width:4px;height:4px;border-radius:50%;background:currentColor}
+.b-curso{background:var(--azul-l);color:var(--azul)}
+.b-alm{background:var(--verde-l);color:var(--verde)}
+.b-pend{background:#f3f4f6;color:var(--gris)}
+.card-tipo{font-size:7px;color:#aab4c4;text-transform:uppercase;letter-spacing:.2px}
+
+.obra-card.alarma-almacen{border-color:var(--verde);animation:pulse-border-verde 1.8s ease-in-out infinite}
+@keyframes pulse-border-verde{0%,100%{border-color:var(--borde); box-shadow:0 0 0 0 rgba(21,128,61,0)}50%{border-color:var(--verde); box-shadow:0 0 10px 1px rgba(21,128,61,.3)}}
+.badge-disponible{font-size:6.5px;font-weight:700;text-transform:uppercase;letter-spacing:.2px;color:var(--verde);background:var(--verde-l);padding:1px 5px;border-radius:8px;margin-top:2px;display:inline-block}
+.badge-dot-verde{width:4px;height:4px;border-radius:50%;background:var(--verde);display:inline-block;margin-right:2px;animation:blink-dot 1.2s infinite}
+
+.obra-card.alarma-nota{border-color:var(--azul);animation:pulse-border-azul 1.8s ease-in-out infinite}
+@keyframes pulse-border-azul{0%,100%{border-color:var(--borde); box-shadow:0 0 0 0 rgba(0,61,122,0)}50%{border-color:var(--azul); box-shadow:0 0 10px 1px rgba(0,61,122,.25)}}
+.badge-nota{font-size:6.5px;font-weight:700;text-transform:uppercase;letter-spacing:.2px;color:var(--azul);background:var(--azul-l);padding:3px 8px;border-radius:20px;margin-top:6px;display:inline-block}
+@keyframes blink-dot{0%,100%{opacity:1}50%{opacity:.3}}
+
+.card-inc{display:flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:600;color:#dc2626;margin-top:6px}
+.card-inc-dot{width:5px;height:5px;border-radius:50%;background:#dc2626;flex-shrink:0}
+
+/* ENTREGAS */
+.entregas-resumen{background:var(--blanco);border:1px solid var(--borde);border-radius:9px;padding:12px;margin-bottom:10px}
+.er-title{font-size:12px;font-weight:700;color:#111;margin-bottom:9px}
+.er-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.er-stat{background:var(--azul-l);border-radius:7px;padding:8px;text-align:center}
+.er-v{font-size:18px;font-weight:700;color:var(--azul);line-height:1}
+.er-l{font-size:9px;font-weight:500;color:var(--gris);margin-top:1px;text-transform:uppercase;letter-spacing:.3px}
+.entrega-row{background:var(--blanco);border:1px solid var(--borde);border-radius:8px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
+.ent-id{font-size:9px;font-weight:600;color:#9ca3af;letter-spacing:.3px;margin-bottom:2px}
+.ent-nm{font-size:13px;font-weight:600;color:#111}
+.ent-tipo{font-size:9px;font-weight:500;color:var(--gris);margin-top:1px}
+.ent-fecha-l{font-size:9px;color:#aab4c4;font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+.ent-fecha{font-size:12px;font-weight:600;color:var(--verde)}
+.ent-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--verde-l);color:var(--verde);display:inline-block;margin-top:2px}
+
+/* EMPTY */
+.empty{text-align:center;padding:32px 16px;color:#9ca3af;font-size:12px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid #e5e7eb;border-top-color:var(--azul);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MODAL DETALLE OBRA */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--blanco);border-radius:16px;width:100%;max-width:440px;max-height:85vh;overflow-y:auto;transform:translateY(14px) scale(.97);transition:transform .22s ease;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-bg.open .modal{transform:translateY(0) scale(1)}
+.modal-head{background:var(--azul);padding:16px 18px;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between}
+.modal-id{font-size:9px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.4px;margin-bottom:2px}
+.modal-nm{font-size:16px;font-weight:700;color:#fff}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,.2);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.modal-close svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2}
+.modal-body{padding:18px}
+
+.modal-ring-wrap{display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.modal-ring{position:relative;width:120px;height:120px}
+.modal-ring svg{transform:rotate(-90deg)}
+.modal-ring-pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.modal-ring-pct .pct-n{font-size:30px;font-weight:800;color:var(--azul);line-height:1}
+.modal-ring-pct .pct-n.done{color:var(--verde)}
+.modal-ring-pct .pct-l{font-size:9px;color:var(--gris);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+.modal-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.modal-info-item{background:#f9fafb;border-radius:9px;padding:10px 12px}
+.modal-info-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;margin-bottom:2px}
+.modal-info-v{font-size:13px;font-weight:600;color:#111}
+.modal-info-v.overdue{color:#dc2626}
+.modal-info-v.ok{color:var(--verde)}
+
+.modal-inc{background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.15);border-left:3px solid #dc2626;border-radius:9px;padding:11px 13px;margin-bottom:14px}
+.modal-inc-t{font-size:12px;font-weight:600;color:#991b1b}
+.modal-inc-d{font-size:11px;color:#b91c1c;opacity:.85;margin-top:2px}
+
+.fases-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:12px}
+.fases-track{position:relative;padding-left:6px}
+.f-line2{position:absolute;left:9px;top:8px;bottom:8px;width:1.5px;background:#e8edf3}
+.fase-item2{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px;position:relative}
+.fase-item2:last-child{margin-bottom:0}
+.f-dot2{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:2px solid var(--borde);background:#fff;position:relative;z-index:1;display:flex;align-items:center;justify-content:center}
+.f-dot2.done{background:var(--azul);border-color:var(--azul)}
+.f-dot2.done::after{content:'✓';font-size:8px;color:#fff;font-weight:700}
+.f-dot2.active{border-color:var(--azul)}
+.f-dot2.active::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--azul)}
+.f-dot2.alm{background:var(--verde);border-color:var(--verde)}
+.f-dot2.alm::after{content:'✓';font-size:8px;color:#fff;font-weight:700}
+.f-nm2{font-size:12.5px;font-weight:600;color:#111;padding-top:1px}
+.f-nm2.done{color:#9ca3af;font-weight:400}
+.f-nm2.pending{color:#c8d0da;font-weight:400}
+.f-nm2.alm{color:var(--verde)}
+.f-tag2{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border-radius:4px;margin-top:3px}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ─────────────────────────── -->
+<div id="s-login" class="on" style="position:fixed;inset:0;z-index:100">
+  <div class="login-bg">
+    <div class="login-bg-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="login-bg-velo"></div>
+    <div class="login-top-line"></div>
+  </div>
+  <div class="login-screen">
+    <div class="login-hdr">
+      <div class="login-logos">
+        <div class="ac-mark-sm"><img id="logo-login" src="" alt=""/></div>
+        <span class="ac-nm-sm">Acercobalt</span>
+        <div class="logo-sep"></div>
+        <span class="client-nm-hdr">Portal de obras</span>
+      </div>
+      <div class="login-tag">Acceso</div>
+    </div>
+    <div class="login-main">
+      <div class="pin-lbl">Introduce tu PIN</div>
+      <div class="dots">
+        <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+        <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+      </div>
+      <div class="pad">
+        <div class="pk" onclick="k('1')"><div class="pk-n">1</div><div class="pk-s">&nbsp;</div></div>
+        <div class="pk" onclick="k('2')"><div class="pk-n">2</div><div class="pk-s">ABC</div></div>
+        <div class="pk" onclick="k('3')"><div class="pk-n">3</div><div class="pk-s">DEF</div></div>
+        <div class="pk" onclick="k('4')"><div class="pk-n">4</div><div class="pk-s">GHI</div></div>
+        <div class="pk" onclick="k('5')"><div class="pk-n">5</div><div class="pk-s">JKL</div></div>
+        <div class="pk" onclick="k('6')"><div class="pk-n">6</div><div class="pk-s">MNO</div></div>
+        <div class="pk" onclick="k('7')"><div class="pk-n">7</div><div class="pk-s">PQRS</div></div>
+        <div class="pk" onclick="k('8')"><div class="pk-n">8</div><div class="pk-s">TUV</div></div>
+        <div class="pk" onclick="k('9')"><div class="pk-n">9</div><div class="pk-s">WXYZ</div></div>
+        <div class="pk sp" onclick="k('C')"><div class="pk-n">Borrar</div></div>
+        <div class="pk" onclick="k('0')"><div class="pk-n">0</div><div class="pk-s">&nbsp;</div></div>
+        <div class="pk sp" onclick="k('D')"><div class="pk-n">⌫</div></div>
+      </div>
+      <div class="pin-msg" id="pin-msg"></div>
+    </div>
+    <div class="login-foot"><div class="login-foot-txt">Tu PIN personal te lo facilita Acercobalt</div></div>
+  </div>
+</div>
+
+<!-- ── PORTAL ─────────────────────────── -->
+<div id="s-portal" style="display:none;flex-direction:column;min-height:100dvh">
+  <header class="portal-hdr">
+    <div class="ph-top-row">
+      <button class="btn-salir" onclick="actualizarDatos()" id="btn-refrescar">↻ Actualizar</button>
+      <button class="btn-salir" onclick="logout()">Salir</button>
+    </div>
+    <div class="ph-logos-row">
+      <div class="ph-cell"><img class="logo-ac" id="logo-portal-ac" src="" alt="Acercobalt"/></div>
+      <div class="ph-cell"><img class="logo-mat" id="logo-portal-mat" src="" alt="Matachana"/></div>
+    </div>
+  </header>
+  <div class="tabs">
+    <div class="tab on" id="tab-obras-btn" onclick="showTab('obras',this)">Mis obras</div>
+    <div class="tab" onclick="showTab('entregas',this)" id="tab-ent">Entregas 2026</div>
+  </div>
+  <div class="banner">
+    <div class="ban-tag">Portal de seguimiento</div>
+    <div class="ban-nm" id="ban-nm">–</div>
+    <div class="ban-sub">Estado de sus obras a tiempo real</div>
+    <div class="ban-stats">
+      <div class="bs" tabindex="0" role="button" aria-label="Ver todas las obras" onclick="irABanner('todas')" onkeydown="if(event.key==='Enter')irABanner('todas')"><div class="bs-v" id="bs-total">–</div><div class="bs-l">Obras</div></div>
+      <div class="bs" tabindex="0" role="button" aria-label="Ver obras en curso" onclick="irABanner('activas')" onkeydown="if(event.key==='Enter')irABanner('activas')"><div class="bs-v" id="bs-curso">–</div><div class="bs-l">En curso</div></div>
+      <div class="bs" id="bs-alm-box" tabindex="0" role="button" aria-label="Ver obras en almacén" onclick="irABanner('almacen')" onkeydown="if(event.key==='Enter')irABanner('almacen')"><div class="bs-v" id="bs-alm">–</div><div class="bs-l">Almacén</div></div>
+      <div class="bs" tabindex="0" role="button" aria-label="Ver obras entregadas" onclick="irABanner('entregadas')" onkeydown="if(event.key==='Enter')irABanner('entregadas')"><div class="bs-v" id="bs-ent">–</div><div class="bs-l">Entregadas</div></div>
+    </div>
+  </div>
+  <!-- TAB OBRAS -->
+  <div class="portal-body" id="tab-obras">
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Buscar por código de obra…" oninput="renderObras()">
+    </div>
+    <div class="filters">
+      <div class="ftab" data-filtro="todas" onclick="setF('todas',this)">Todas</div>
+      <div class="ftab" data-filtro="camaras" onclick="setF('camaras',this)">Cámaras</div>
+      <div class="ftab" data-filtro="mobiliario" onclick="setF('mobiliario',this)">Mobiliario</div>
+      <div class="ftab on" data-filtro="activas" onclick="setF('activas',this)">En curso</div>
+      <div class="ftab" data-filtro="almacen" onclick="setF('almacen',this)">En almacén</div>
+      <div class="ftab" data-filtro="pendientes" onclick="setF('pendientes',this)">Pendientes de iniciar</div>
+    </div>
+    <div id="obras-list"></div>
+  </div>
+  <!-- TAB ENTREGAS -->
+  <div class="portal-body" id="tab-entregas" style="display:none">
+    <div class="entregas-resumen">
+      <div class="er-title">Resumen de entregas · 2026</div>
+      <div class="er-stats">
+        <div class="er-stat"><div class="er-v" id="er-total">–</div><div class="er-l">Total</div></div>
+        <div class="er-stat"><div class="er-v" id="er-cam">–</div><div class="er-l">Cámaras</div></div>
+        <div class="er-stat"><div class="er-v" id="er-mob">–</div><div class="er-l">Mobiliario</div></div>
+      </div>
+    </div>
+    <div id="entregas-list"></div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE OBRA -->
+<div class="modal-bg" id="m-detalle" onclick="closeMSi(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-id" id="md-id">–</div>
+        <div class="modal-nm" id="md-nm">–</div>
+      </div>
+      <button class="modal-close" onclick="cerrarDetalle()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="md-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURACIÓN SUPABASE
+// ============================================================
+const SUPABASE_URL = 'https://kzjhymovdatnontzvkum.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_SiBFvz-ruZTZzPTXshhjgg_CTDGDusD';
+
+const FASES_C=['Recepción de materiales','Montaje de camillas y zócalos','Paneles y aislamiento','Ensamblaje','Control de calidad','Embalaje y preparación expedición','En almacén para retirar'];
+const FASES_M=['Recepción de materiales','Corte y doblado','Soldadura y ensamblaje','Acabados','Control de calidad','Embalaje y preparación expedición','En almacén para retirar'];
+
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
+var buf='',t1,t2,sesion=null,obrasData=[],entregadasData=[],filtroActivo='activas',pinActual='';
+
+// ============================================================
+// ID DE ENTREGA Y "EN ALMACÉN"
+// ============================================================
+// Obra completa: solo el ID. Entrega parcial: ID-N, donde N es el número de
+// entrega del albarán (llega de la función del portal en "sufijoEntrega").
+function idConSufijo(o){
+  return (o && o.sufijoEntrega) ? (o.id + '-' + o.sufijoEntrega) : o.id;
+}
+
+// "En almacén" = obra entera lista (fase 7), o con unidades ya entregadas
+// que todavía no se han retirado (entrega parcial).
+function enAlmacen(o){
+  return o.faseActual>=o.totalFases || (o.unidadesEnAlmacen>0);
+}
+
+// ============================================================
+// LOGOS
+// Están como archivos junto a este index.html (misma carpeta de Netlify):
+//   logo-acercobalt.png   y   logo-matachana.png
+// Si alguno no se encuentra, simplemente se oculta esa imagen.
+// ============================================================
+(function(){
+  var LOGOS = {
+    'logo-login': 'logo-acercobalt.png',
+    'logo-portal-ac': 'logo-acercobalt.png',
+    'logo-portal-mat': 'logo-matachana.png'
+  };
+  Object.keys(LOGOS).forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.onerror = function(){ el.style.display = 'none'; };
+    el.src = LOGOS[id];
+  });
+})();
+
+// ============================================================
+// PIN INPUT
+// ============================================================
+function k(v){
+  if(v==='C'){buf='';rd('n');return}
+  if(v==='D'){buf=buf.slice(0,-1);rd('n');return}
+  if(buf.length>=4) return;
+  buf+=v; rd('n');
+  if(buf.length===4) setTimeout(chkPin,150);
+}
+
+function rd(s){
+  for(var i=0;i<4;i++){
+    var d=document.getElementById('d'+i);
+    d.className='dot';
+    if(s==='ok') d.classList.add('ok');
+    else if(s==='er') d.classList.add('er');
+    else if(i<buf.length) d.classList.add('f');
+  }
+}
+
+function chkPin(){
+  var pin=buf; buf='';
+  var m=document.getElementById('pin-msg');
+
+  fetch(SUPABASE_URL + '/functions/v1/rapid-handler', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'apikey': SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ pin: pin })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if(res.ok){
+      rd('ok'); m.className='pin-msg ok'; m.textContent='✓ Acceso correcto';
+      pinActual = pin;
+      clearTimeout(t1);
+      t1=setTimeout(function(){ entrarPortal(res); },800);
+    } else {
+      rd('er'); m.className='pin-msg'; m.textContent='PIN incorrecto · Inténtalo de nuevo';
+      clearTimeout(t2); t2=setTimeout(function(){ m.textContent=''; rd('n'); },1600);
+    }
+  })
+  .catch(function(e){
+    rd('er'); document.getElementById('pin-msg').textContent='Error de conexión';
+    setTimeout(function(){rd('n');},1500);
+  });
+}
+
+function actualizarDatos(){
+  var btn=document.getElementById('btn-refrescar');
+  if(!pinActual || !btn) return;
+  var textoOriginal=btn.textContent;
+  btn.textContent='Actualizando…';
+  btn.disabled=true;
+
+  fetch(SUPABASE_URL + '/functions/v1/rapid-handler', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'apikey': SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ pin: pinActual })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    btn.textContent=textoOriginal;
+    btn.disabled=false;
+    if(!res.ok) return;
+    obrasData = res.obras || [];
+    entregadasData = res.entregadas || [];
+    var alm=obrasData.filter(enAlmacen).length;
+    var curso=obrasData.filter(function(o){return o.faseActual>1&&o.faseActual<o.totalFases}).length;
+    document.getElementById('bs-total').textContent=obrasData.length;
+    document.getElementById('bs-curso').textContent=curso;
+    document.getElementById('bs-alm').textContent=alm;
+    document.getElementById('bs-alm-box').classList.toggle('alarma-banner', alm>0);
+    document.getElementById('bs-ent').textContent=entregadasData.length;
+    renderObras();
+    renderEntregas();
+  })
+  .catch(function(e){
+    btn.textContent=textoOriginal;
+    btn.disabled=false;
+  });
+}
+
+function entrarPortal(res){
+  sesion = res.cliente;
+  document.getElementById('s-login').style.display='none';
+  var sp=document.getElementById('s-portal');
+  sp.style.display='flex';
+  document.getElementById('ban-nm').textContent=res.cliente.nombre;
+  document.getElementById('pin-msg').textContent='';
+  rd('n');
+
+  obrasData = res.obras || [];
+  entregadasData = res.entregadas || [];
+  var alm=obrasData.filter(enAlmacen).length;
+  var curso=obrasData.filter(function(o){return o.faseActual>1&&o.faseActual<o.totalFases}).length;
+  document.getElementById('bs-total').textContent=obrasData.length;
+  document.getElementById('bs-curso').textContent=curso;
+  document.getElementById('bs-alm').textContent=alm;
+  document.getElementById('bs-alm-box').classList.toggle('alarma-banner', alm>0);
+  document.getElementById('bs-ent').textContent=entregadasData.length;
+  renderObras();
+  renderEntregas();
+}
+
+function irABanner(filtro){
+  if(filtro==='entregadas'){
+    showTab('entregas', document.getElementById('tab-ent'));
+    return;
+  }
+  showTab('obras', document.getElementById('tab-obras-btn'));
+  var btn = document.querySelector('.ftab[data-filtro="'+filtro+'"]');
+  if(btn) setF(filtro, btn);
+}
+
+function renderObras(){
+  var q=(document.querySelector('#tab-obras .search input').value||'').toLowerCase();
+  var list=obrasData.filter(function(o){
+    if(filtroActivo==='camaras'&&o.canal!=='camaras') return false;
+    if(filtroActivo==='mobiliario'&&o.canal!=='mobiliario') return false;
+    if(filtroActivo==='activas'&&(o.faseActual<=1||o.faseActual>=o.totalFases)) return false;
+    if(filtroActivo==='almacen'&&!enAlmacen(o)) return false;
+    if(filtroActivo==='pendientes'&&!(o.faseActual<=1)) return false;
+    if(q&&!(o.id||'').toLowerCase().includes(q)&&!(o.referencia||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  var el=document.getElementById('obras-list');
+  if(!list.length){ el.innerHTML='<div class="empty">No se encontraron obras</div>'; return; }
+  el.innerHTML='<div class="obras-grid">'+list.map(obraCard).join('')+'</div>';
+}
+
+function ringSVG(pct,done,size,stroke){
+  size=size||50; stroke=stroke||5;
+  var r=(size/2)-stroke, c=2*Math.PI*r, off=c-(pct/100)*c;
+  var cx=size/2, cy=size/2;
+  return '<svg width="'+size+'" height="'+size+'"><circle class="ring-bg" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke-width="'+stroke+'"/>'
+    +'<circle class="ring-fg'+(done?' done':'')+'" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke-width="'+stroke+'" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" stroke-linecap="round"/></svg>';
+}
+
+function obraCard(o){
+  var total=o.totalFases||7;
+  var fa=parseInt(o.faseActual)||1;
+  var pct=o.porcentaje||0;
+  var alm=fa>=total;
+  var enCurso=fa>1&&!alm;
+  var incs=(o.incidencias||[]).filter(function(i){return i.resuelta!=='Si'});
+  var parcialAlm=!alm&&o.unidadesEnAlmacen>0;
+  var estado=alm?'Almacén':parcialAlm?'Almacén parcial':enCurso?'En curso':'Pendiente';
+  var badgeCls=(alm||parcialAlm)?'b-alm':enCurso?'b-curso':'b-pend';
+  var tieneNota=!!(o.notas&&String(o.notas).trim()!=='');
+
+  var claseAlarma = (alm||parcialAlm) ? 'alarma-almacen' : (tieneNota ? 'alarma-nota' : '');
+  var extraBadge = alm
+    ? '<div class="badge-disponible"><span class="badge-dot-verde"></span>Disponible</div>'
+    : parcialAlm
+      ? '<div class="badge-disponible"><span class="badge-dot-verde"></span>'+o.unidadesEnAlmacen+' de '+o.totalUnidades+' disponibles</div>'
+      : (tieneNota ? '<div class="badge-nota">📝 Nota</div>' : '');
+
+  return '<div class="obra-card '+claseAlarma+'" onclick="abrirDetalle(\''+o.id+'\')">'
+    +'<div class="card-id">'+idConSufijo(o)+'</div>'
+    +'<div class="card-nm">'+o.referencia+'</div>'
+    +'<div class="card-ring">'+ringSVG(pct,alm)+'<div class="ring-pct'+(alm?' done':'')+'">'+pct+'%</div></div>'
+    +'<span class="card-badge '+badgeCls+'"><span class="dot"></span>'+estado+'</span>'
+    +extraBadge
+    +'<div class="card-tipo">'+(o.canal==='camaras'?'Cámara frigorífica':'Mobiliario')+'</div>'
+    +(incs.length?'<div class="card-inc"><span class="card-inc-dot"></span>Incidencia activa</div>':'')
+    +'</div>';
+}
+
+function abrirDetalle(id){
+  var o=obrasData.find(function(x){return x.id===id});
+  if(!o) return;
+  var fases=o.canal==='camaras'?FASES_C:FASES_M;
+  var total=fases.length;
+  var fa=parseInt(o.faseActual)||1;
+  var pct=o.porcentaje||0;
+  var alm=fa>=total;
+  var overdue=!alm&&o.fechaPrevista&&new Date(o.fechaPrevista)<new Date();
+  var incs=(o.incidencias||[]).filter(function(i){return i.resuelta!=='Si'});
+
+  document.getElementById('md-id').textContent=idConSufijo(o);
+  document.getElementById('md-nm').textContent=o.referencia+' · '+(o.canal==='camaras'?'Cámara frigorífica':'Mobiliario');
+
+  var html='<div class="modal-ring-wrap"><div class="modal-ring">'+ringSVG(pct,alm,120,10)
+    +'<div class="modal-ring-pct"><div class="pct-n'+(alm?' done':'')+'">'+pct+'%</div><div class="pct-l">completado</div></div></div></div>';
+
+  html+='<div class="modal-info">'
+    +'<div class="modal-info-item"><div class="modal-info-l">Entrada taller</div><div class="modal-info-v">'+fmtF(o.fechaLlegada)+'</div></div>'
+    +'<div class="modal-info-item"><div class="modal-info-l">Entrega prevista</div><div class="modal-info-v'+(overdue?' overdue':alm?' ok':'')+'">'+fmtF(o.fechaPrevista)+'</div></div>'
+    +'</div>';
+
+  incs.forEach(function(i){
+    html+='<div class="modal-inc"><div class="modal-inc-t">⚠ '+i.titulo+'</div>'+(i.descripcion?'<div class="modal-inc-d">'+i.descripcion+'</div>':'')+'</div>';
+  });
+
+  // Entregas parciales: detalle de cada una (ID-N) y cuántas unidades siguen
+  // disponibles para retirar en almacén.
+  if(o.entregas&&o.entregas.length){
+    html+='<div class="fases-title" style="margin-top:4px">Entregas</div><div style="margin-bottom:16px">';
+    o.entregas.forEach(function(e){
+      var disp=e.unidades-e.retiradas;
+      var est=disp>0
+        ? '<span style="color:var(--verde);font-weight:700">'+disp+' disponible'+(disp>1?'s':'')+' en almacén</span>'
+        : '<span style="color:var(--gris)">Retirada</span>';
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border-radius:9px;padding:9px 12px;margin-bottom:6px;font-size:12px">'
+        +'<div><div style="font-size:9px;font-weight:700;color:#9ca3af;letter-spacing:.3px">'+o.id+'-'+e.n+'</div>'
+        +'<div style="font-weight:600;color:#111">'+e.unidades+' unidad'+(e.unidades>1?'es':'')+'</div></div>'
+        +'<div>'+est+'</div></div>';
+    });
+    html+='</div>';
+  } else if(!alm&&o.unidadesEnAlmacen>0){
+    html+='<div style="background:var(--verde-l);border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--verde);font-weight:600">📦 Entrega parcial: '+o.unidadesEnAlmacen+' de '+o.totalUnidades+' unidades disponibles para retirar en almacén.</div>';
+  }
+
+  html+='<div class="fases-title">Seguimiento de fases</div><div class="fases-track"><div class="f-line2"></div>';
+  fases.forEach(function(f,i){
+    var idx=i+1,done=idx<fa,active=idx===fa&&!alm,isAlm=idx===total&&alm,pending=idx>fa;
+    var dc=isAlm?'alm':done?'done':active?'active':'';
+    var nc=isAlm?'alm':done?'done':active?'active':pending?'pending':'';
+    var tag=active?'<span class="f-tag2" style="background:var(--azul-l);color:var(--azul)">En curso</span>':isAlm?'<span class="f-tag2" style="background:var(--verde-l);color:var(--verde)">Disponible</span>':'';
+    html+='<div class="fase-item2"><div class="f-dot2 '+dc+'"></div><div><div class="f-nm2 '+nc+'">'+f+'</div>'+tag+'</div></div>';
+  });
+  html+='</div>';
+
+  if(o.notas){
+    html+='<div style="background:#f9fafb;border-radius:9px;padding:11px 13px;margin-top:16px"><div class="modal-info-l" style="margin-bottom:3px">Nota de Acercobalt</div><div style="font-size:12px;color:#374151">'+o.notas+'</div></div>';
+  }
+
+  document.getElementById('md-body').innerHTML=html;
+  document.getElementById('m-detalle').classList.add('open');
+}
+
+function cerrarDetalle(){ document.getElementById('m-detalle').classList.remove('open'); }
+function closeMSi(e){ if(e.target===document.getElementById('m-detalle')) cerrarDetalle(); }
+
+function renderEntregas(){
+  var lista=entregadasData;
+  document.getElementById('er-total').textContent=lista.length;
+  document.getElementById('er-cam').textContent=lista.filter(function(o){return o.canal==='camaras'}).length;
+  document.getElementById('er-mob').textContent=lista.filter(function(o){return o.canal==='mobiliario'}).length;
+  var el=document.getElementById('entregas-list');
+  if(!lista.length){ el.innerHTML='<div class="empty">No hay entregas registradas este año</div>'; return; }
+  el.innerHTML=lista.map(function(o){
+    return '<div class="entrega-row">'
+      +'<div><div class="ent-id">'+idConSufijo(o)+'</div><div class="ent-nm">'+o.referencia+'</div><div class="ent-tipo">'+(o.canal==='camaras'?'Cámara frigorífica':'Mobiliario')+'</div></div>'
+      +'<div style="text-align:right"><div class="ent-fecha-l">Entregada</div><div class="ent-fecha">'+(o.fechaEntrega?fmtF(o.fechaEntrega):'Sin fecha')+'</div><div class="ent-badge">✓ Entregada</div></div>'
+      +'</div>';
+  }).join('');
+}
+
+function setF(f,el){
+  filtroActivo=f;
+  document.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('on')});
+  el.classList.add('on');
+  renderObras();
+}
+
+function showTab(t,el){
+  document.getElementById('tab-obras').style.display=t==='obras'?'block':'none';
+  document.getElementById('tab-entregas').style.display=t==='entregas'?'block':'none';
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on')});
+  el.classList.add('on');
+}
+
+function logout(){
+  sesion=null; obrasData=[]; pinActual='';
+  document.getElementById('s-portal').style.display='none';
+  document.getElementById('s-login').style.display='block';
+}
+
+function fmtF(d){
+  if(!d||d==='') return '–';
+  try{var p=d.split('-');if(p.length===3&&parseInt(p[0])>1910)return p[2]+'/'+p[1]+'/'+p[0].slice(2)}catch(e){}
+  return d;
+}
+
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('s-login').style.display!=='none'){
+    if(/^[0-9]$/.test(e.key))k(e.key);
+    else if(e.key==='Backspace')k('D');
+    else if(e.key==='Escape')k('C');
+  }
+});
+</script>
+</body>
+</html>
